@@ -6,7 +6,7 @@ __license__ = "GNU GPL 3.0 or later"
 # pylint: disable=multiple-imports
 import os, operator
 
-# pylint: disable=no-name-in-module
+# pylint: disable=import-error, no-name-in-module
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QIcon
 
@@ -25,6 +25,9 @@ def size_maxed(inner, outer, exact=False):
 
 class IconProvider(object):
     """Qt model class to adapt game-handling backend to Qt Views"""
+
+    icon_dirs = []
+
     def __init__(self, fallback_name):
         self.icon_cache = {}  # TODO: Do this properly
         self.fallback_name = fallback_name
@@ -85,16 +88,18 @@ class IconProvider(object):
 
         return icon
 
-    @staticmethod
-    def lookup_local(name):
+    @classmethod
+    def lookup_local(cls, name):
         if name:
-            path_base = os.path.join(os.path.dirname(__file__), name)
-            for ext in ('svgz', 'svg', 'png'):
-                icon_path = '{}.{}'.format(path_base, ext)
-                if os.path.exists(icon_path):
-                    icon = QIcon(os.path.join(icon_path))
-                    if not icon.isNull():
-                        return icon
+            # TODO: Refactor so this isn't a class method
+            for icon_dir in cls.icon_dirs:
+                path_base = os.path.join(icon_dir, name)
+                for ext in ('svgz', 'svg', 'png'):
+                    icon_path = '{}.{}'.format(path_base, ext)
+                    if os.path.exists(icon_path):
+                        icon = QIcon(os.path.join(icon_path))
+                        if not icon.isNull():
+                            return icon
         return None
 
     # TODO: Do this properly
